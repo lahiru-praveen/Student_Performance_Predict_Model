@@ -8,6 +8,46 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
 
+# Set the background color using Streamlit's markdown
+st.markdown("""
+    <style>
+    .stApp {
+        background: linear-gradient(to right, #f8f9fa, #e9ecef); /* Light gradient background */
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #343a40; /* Darker text color for better readability */
+    }
+    .stButton>button {
+        background-color: #007bff; /* Primary button color */
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 20px;
+        font-size: 16px;
+    }
+    .stButton>button:hover {
+        background-color: #0056b3; /* Darker button color on hover */
+    }
+    .stTextInput>div>input {
+        border-radius: 4px;
+        border: 1px solid #ced4da;
+        padding: 10px;
+        font-size: 16px;
+    }
+    .stSelectbox>div>select {
+        border-radius: 4px;
+        border: 1px solid #ced4da;
+        padding: 10px;
+        font-size: 16px;
+    }
+    .stDataFrame {
+        margin-top: 20px;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Load the dataset
 data = pd.read_csv('Student_Performance.csv')
 
@@ -71,6 +111,10 @@ with tab1:
     sleep_hours = st.number_input('Sleep Hours', min_value=0)
     sample_question_papers_practiced = st.number_input('Sample Question Papers Practiced', min_value=0)
 
+    # Check if sleep_hours + hours_studied is less than or equal to 24
+    if (sleep_hours + hours_studied) > 24:
+        st.error("The total of Sleep Hours and Hours Studied should not exceed 24 hours.")
+
     # Encode 'Extracurricular Activities' as it was done during training
     extracurricular_activities_encoded = 1 if extracurricular_activities == 'Yes' else 0
 
@@ -91,7 +135,11 @@ with tab1:
     # Prediction
     if st.button('Predict'):
         prediction = model.predict(input_data_scaled)
-        st.write(f'Predicted Performance Index: {prediction[0]:.2f}')
+        # Check if prediction exceeds 100
+        if prediction[0] > 100:
+            st.warning("The predicted Performance Index exceeds the maximum value of 100.")
+        else:
+            st.write(f'Predicted Performance Index: {prediction[0]:.2f}')
 
 with tab2:
     st.header('Model Visualizations')
@@ -99,7 +147,6 @@ with tab2:
     plot_actual_vs_predicted(y_test, y_pred)  # Plot actual vs predicted values
     st.write("Parameters Vs Predicted Performance Index")
     plot_feature_vs_target(df, 'Performance Index')  # Plot each feature against the target
-
 
 with tab3:
     st.header('Model Details')
